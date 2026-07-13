@@ -1,0 +1,35 @@
+{
+    "name": "Луна — календарь цикла",
+    "short_name": "Луна",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#FFF7F8",
+    "theme_color": "#E8607B",
+    "description": "Календарь цикла и женского здоровья. Данные хранятся на устройстве.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}
