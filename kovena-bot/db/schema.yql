@@ -1,5 +1,4 @@
--- Схема из ТЗ, п. 5. Создаётся один раз: yc ydb ... или в консоли YDB.
--- На этапе 1 используется только processed_updates.
+-- Схема по ТЗ, п. 5, с дополнениями (помечены). Создаётся один раз в консоли YDB → «Запросы».
 
 CREATE TABLE users (
   telegram_id     Int64,
@@ -8,6 +7,11 @@ CREATE TABLE users (
   opted_in        Bool,
   opted_in_at     Timestamp,
   promo_issued_at Timestamp,
+  -- дополнение: шаг диалога («ждём вопрос», «ждём номер заказа»).
+  -- Функция не помнит ничего между вызовами, поэтому шаг хранится здесь.
+  -- Сам текст сообщения сюда не попадает.
+  state           Utf8,
+  state_at        Timestamp,
   PRIMARY KEY (telegram_id)
 );
 
@@ -21,24 +25,37 @@ CREATE TABLE orders (
   PRIMARY KEY (order_no)
 );
 
+-- Только факт обращения. Текст вопроса не хранится. TTL — дополнение:
+-- статистике нужны 30 дней, дольше держать незачем.
 CREATE TABLE questions (
   id          Utf8,
   telegram_id Int64,
   asked_at    Timestamp,
   PRIMARY KEY (id)
-);
+) WITH (TTL = Interval("P90D") ON asked_at);
 
 CREATE TABLE menu_hits (
   id      Utf8,
   section Utf8,
   at      Timestamp,
   PRIMARY KEY (id)
-);
+) WITH (TTL = Interval("P90D") ON at);
 
--- Telegram повторяет апдейты максимум сутки; TTL чистит таблицу сам,
--- без расписаний и лишних вызовов функции.
+-- Telegram повторяет апдейты не дольше суток.
 CREATE TABLE processed_updates (
   update_id Int64,
   at        Timestamp,
   PRIMARY KEY (update_id)
 ) WITH (TTL = Interval("P2D") ON at);
+
+-- Дополнение: черновик рассылки админа и прогресс отправки (D2).
+CREATE TABLE drafts (
+  admin_id   Int64,
+  text       Utf8,
+  last_id    Int64,
+  sent       Int32,
+  blocked    Int32,
+  failed     Int32,
+  created_at Timestamp,
+  PRIMARY KEY (admin_id)
+) WITH (TTL = Interval("P7D") ON created_at);

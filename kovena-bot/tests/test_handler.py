@@ -91,7 +91,7 @@ def test_group_chat_ignored(cfg, store, bot):
 
 
 def test_unknown_text_and_media(cfg, store, bot):
-    process(event(msg("привет", 1)), cfg, store, bot)
+    process(event(msg("абракадабра", 1)), cfg, store, bot)
     photo = {"update_id": 2, "message": {"chat": {"id": 42, "type": "private"}, "photo": []}}
     process(event(photo), cfg, store, bot)
     assert [m["text"] for m in bot.sent] == [texts.NOT_UNDERSTOOD] * 2

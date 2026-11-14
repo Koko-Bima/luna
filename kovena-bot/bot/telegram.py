@@ -8,10 +8,11 @@ import httpx
 
 
 class TelegramError(Exception):
-    def __init__(self, code: int | None, description: str):
+    def __init__(self, code: int | None, description: str, retry_after: int | None = None):
         super().__init__(f"{code}: {description}")
         self.code = code
         self.description = description
+        self.retry_after = retry_after
 
 
 class Telegram:
@@ -24,7 +25,8 @@ class Telegram:
         resp = self._client.post(self._base + method, json=params)
         data = resp.json()
         if not data.get("ok"):
-            raise TelegramError(data.get("error_code"), data.get("description", ""))
+            raise TelegramError(data.get("error_code"), data.get("description", ""),
+                                (data.get("parameters") or {}).get("retry_after"))
         return data.get("result")
 
     def send_message(self, chat_id: int, text: str, reply_markup: dict | None = None, **kw):

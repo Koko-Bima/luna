@@ -77,7 +77,7 @@ def test_card_nabory_button_sends_prices(cfg, store, bot):
     [m] = bot.sent
     assert "2 990 ₽" in m["text"] and "5 900 ₽" in m["text"]
     assert m["text"].endswith(texts.DISCLAIMER)
-    assert [b["text"] for b in buttons(m["reply_markup"])] == [texts.BTN_ORDER]
+    assert [b["text"] for b in buttons(m["reply_markup"])] == [texts.BTN_ORDER, texts.BTN_PROMO]
 
 
 def test_unknown_callback_only_answered(cfg, store, bot):

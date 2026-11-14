@@ -7,6 +7,7 @@ import json
 import logging
 
 from bot.config import Config
+from bot.context import Ctx
 from bot.router import handle_update
 from bot.telegram import Telegram, TelegramError
 
@@ -34,7 +35,7 @@ def _get_app():
     return _app
 
 
-def process(event: dict, cfg: Config, store, bot) -> dict:
+def process(event: dict, cfg: Config, store, bot, now=None) -> dict:
     headers = {k.lower(): v for k, v in (event.get("headers") or {}).items()}
     got = headers.get("x-telegram-bot-api-secret-token", "")
     if not cfg.webhook_secret or not hmac.compare_digest(got.encode(), cfg.webhook_secret.encode()):
@@ -54,7 +55,8 @@ def process(event: dict, cfg: Config, store, bot) -> dict:
         return _resp(200)
 
     try:
-        handle_update(update, bot, cfg)
+        ctx = Ctx(bot=bot, cfg=cfg, store=store) if now is None else Ctx(bot, cfg, store, now)
+        handle_update(update, ctx)
     except TelegramError as e:
         if e.code in _FINAL_TG_CODES:
             log.warning("update %s: telegram %s", update_id, e.code)

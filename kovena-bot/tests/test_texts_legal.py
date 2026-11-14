@@ -2,19 +2,16 @@
 import re
 
 from bot import sections
-from content import prices, texts
+from content import legal, prices, texts
 
-PRODUCT_MARKERS = ("бад", "набор", "инозит", "магний", "омега", "₽", "состав", "капсул")
-FORBIDDEN = ("зачат", "фертильн", "дефицит", "помогает", "повышает шансы",
-             "восполняет", "забеременеть", "для беременных", "врач")
-# «беременность» допустима только в перечне противопоказаний с этикетки.
-CONTRAINDICATIONS = re.compile(r"Противопоказания:[^\n]*")
+# Служебные тексты для админа и оператора — не реклама.
+SERVICE_PREFIXES = ("_", "BTN_", "ADMIN_", "BC_", "OP_", "STAT")
 
 
 def messages():
     """Все тексты, которые бот отправляет как сообщения."""
     for name, value in vars(texts).items():
-        if name.startswith(("_", "BTN_")) or name == "DISCLAIMER":
+        if name.startswith(SERVICE_PREFIXES) or name == "DISCLAIMER":
             continue
         if isinstance(value, str):
             yield name, value
@@ -25,17 +22,13 @@ def messages():
 
 def test_product_mentions_have_disclaimer():
     for name, s in messages():
-        if any(m in s.lower() for m in PRODUCT_MARKERS):
+        if legal.mentions_product(s):
             assert texts.DISCLAIMER in s, f"{name}: нет дисклеймера"
 
 
 def test_no_forbidden_wording():
     for name, s in messages():
-        low = s.lower()
-        for w in FORBIDDEN:
-            assert w not in low, f"{name}: запрещённое «{w}»"
-        assert "беремен" not in CONTRAINDICATIONS.sub("", s).lower(), \
-            f"{name}: «беременность» вне противопоказаний"
+        assert not legal.forbidden_words(s), f"{name}: {legal.forbidden_words(s)}"
 
 
 def test_no_hardcoded_links():
