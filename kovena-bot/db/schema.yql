@@ -1,0 +1,44 @@
+-- Схема из ТЗ, п. 5. Создаётся один раз: yc ydb ... или в консоли YDB.
+-- На этапе 1 используется только processed_updates.
+
+CREATE TABLE users (
+  telegram_id     Int64,
+  first_seen      Timestamp,
+  last_seen       Timestamp,
+  opted_in        Bool,
+  opted_in_at     Timestamp,
+  promo_issued_at Timestamp,
+  PRIMARY KEY (telegram_id)
+);
+
+CREATE TABLE orders (
+  order_no        Utf8,
+  status          Utf8,
+  updated_at      Timestamp,
+  telegram_id     Int64,
+  delivered_at    Timestamp,
+  review_asked_at Timestamp,
+  PRIMARY KEY (order_no)
+);
+
+CREATE TABLE questions (
+  id          Utf8,
+  telegram_id Int64,
+  asked_at    Timestamp,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE menu_hits (
+  id      Utf8,
+  section Utf8,
+  at      Timestamp,
+  PRIMARY KEY (id)
+);
+
+-- Telegram повторяет апдейты максимум сутки; TTL чистит таблицу сам,
+-- без расписаний и лишних вызовов функции.
+CREATE TABLE processed_updates (
+  update_id Int64,
+  at        Timestamp,
+  PRIMARY KEY (update_id)
+) WITH (TTL = Interval("P2D") ON at);
